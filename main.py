@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.schemas import UserRegister
 
 app = FastAPI(
     title="AuthCore API",
@@ -23,4 +24,9 @@ def health():
         "status": "healthy",
         "service": "AuthCore",
         "version": "1.0.0"
+    }
+@app.post("/register")
+def register(user: UserRegister):
+    return{
+        "messege":"User data recieved"
     }
