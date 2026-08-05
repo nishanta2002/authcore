@@ -28,5 +28,7 @@ def health():
 @app.post("/register")
 def register(user: UserRegister):
     return{
-        "messege":"User data recieved"
+        "messege":"Registration request received",
+        "name" : user.name,
+        "email": user.email
     }
