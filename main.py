@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from app.schemas import UserRegister
+from app.db.database import engine, SessionLocal
+from app.db.models import User
+from app.security import hash_password
 
 app = FastAPI(
     title="AuthCore API",
@@ -27,6 +30,16 @@ def health():
     }
 @app.post("/register")
 def register(user: UserRegister):
+    db = SessionLocal()
+    new_user = User(
+        name = user.name,
+        email = user.email,
+        password=hash_password(user.password)
+    )
+    db.add(new_user)
+    db.commit()
+    print("USER SAVED:", new_user.id)
+
     return{
         "messege":"Registration request received",
         "name" : user.name,
