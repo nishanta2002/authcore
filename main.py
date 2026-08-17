@@ -1,8 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from app.schemas import UserRegister
-from app.db.database import engine, SessionLocal
+from app.db.database import get_db
 from app.db.models import User
 from app.security import hash_password
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 app = FastAPI(
     title="AuthCore API",
@@ -12,7 +14,6 @@ app = FastAPI(
                 "name": "Titan Labs"
             }
 )
-
 @app.get("/")
 def home():
     return {
@@ -29,8 +30,16 @@ def health():
         "version": "1.0.0"
     }
 @app.post("/register")
-def register(user: UserRegister):
-    db = SessionLocal()
+def register(user: UserRegister, db: Session = Depends(get_db)):
+    result = db.execute(
+        select(User).where(User.email == user.email)
+    )
+    exisiting_user = result.scalar_one_or_none
+    if exisiting_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Message : Email is already Registered"
+        )
     new_user = User(
         name = user.name,
         email = user.email,
@@ -41,7 +50,7 @@ def register(user: UserRegister):
     print("USER SAVED:", new_user.id)
 
     return{
-        "messege":"Registration request received",
+        "message":"Registration request received",
         "name" : user.name,
         "email": user.email
     }
